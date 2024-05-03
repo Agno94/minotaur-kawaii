@@ -10,13 +10,13 @@ initrd_path="/boot/initrd.img"
 linux_path="/boot/vmlinuz"
 sbkeys_path="/root/sbkeys/DB-agno2401016"
 splash_file_path="/opt/mkuki/uki_splash_ubuntu_framework.bmp"
-efi_path="ubuntu-UKI/Linux.efi"
-stud_path=`ls -1 /var/lib/flatpak/runtime/org.gnome.Platform/x86_64/*/*/files/lib/systemd/boot/efi/linuxx64.efi.stub|sort -r|head -n 1`
-#stud_path="/var/lib/flatpak/runtime/org.gnome.Platform/x86_64/45/3ef40ce469661e017e94259d2faa3056c437e492f077d2684208bb53a282f8b6/files/lib/systemd/boot/efi/linuxx64.efi.stub"
+efi_path="linuxUKI/ubuntu.efi"
+stub_path=`ls -1 /var/lib/flatpak/runtime/org.gnome.Platform/x86_64/*/*/files/lib/systemd/boot/efi/linuxx64.efi.stub|sort -r|head -n 1`
+#stub_path="/var/lib/flatpak/runtime/org.gnome.Platform/x86_64/45/3ef40ce469661e017e94259d2faa3056c437e492f077d2684208bb53a282f8b6/files/lib/systemd/boot/efi/linuxx64.efi.stub"
 
-align="$(objdump -p $stud_path | awk '{ if ($1 == "SectionAlignment"){print $2} }')"
+align="$(objdump -p $stub_path | awk '{ if ($1 == "SectionAlignment"){print $2} }')"
 align=$((16#$align))
-osrel_offs="$(objdump -h "$stud_path" | awk 'NF==7 {size=strtonum("0x"$3); offset=strtonum("0x"$4)} END {print size + offset}')"
+osrel_offs="$(objdump -h "$stub_path" | awk 'NF==7 {size=strtonum("0x"$3); offset=strtonum("0x"$4)} END {print size + offset}')"
 osrel_offs=$((osrel_offs + "$align" - osrel_offs % "$align"))
 cmdline_offs=$((osrel_offs + $(stat -Lc%s "/usr/lib/os-release")))
 cmdline_offs=$((cmdline_offs + "$align" - cmdline_offs % "$align"))
@@ -43,7 +43,7 @@ objcopy \
     --change-section-vma .initrd=$(printf 0x%x $initrd_offs) \
     --add-section .linux="$linux_path" \
     --change-section-vma .linux=$(printf 0x%x $linux_offs) \
-    "$stud_path" "$temp_file_name"
+    "$stub_path" "$temp_file_name"
 
 if [ -f "$esp_path/EFI/$efi_path" ]; then
   echo -- Saving old image to "$esp_path/EFI/$efi_path.old" ...

@@ -1,4 +1,4 @@
-Tools (started on Ubuntu Mantic) for a System with Full Disk and Home Directory Dataset ZFS-based encryption and TPM unlock
+Tools (started on Ubuntu Mantic Minotaur) for a System with Full-Disk and Home-Directory-Dataset ZFS-based encryption and TPM unlock
 ------------------------
 
 ### Motivation and inspirations
@@ -38,9 +38,9 @@ Firmware side(prerequisite/setup):
 
 ### How did the Ubuntu installer set up ZFS encryption
 
-The system was originally installed with a 22.04 disk and later upgraded. The setup program created a main zpool called `rpool` for most of the system. All filesystems in the pool were encrypted under a single encryption root. The encryption key was saved in a small zvol called `keystore`. This volume was encrypted with the password I entered during installation using LUKS, and formatted with ext4. Scripts in the initramfs ask for the keystore password and mount it in `/run/keystore/rpool/` before unlocking and mounting the root filesystem.
+The system was originally installed with a Ubuntu 22.04 ISO and later upgraded. The setup program created a main zpool called `rpool` for most of the system. All filesystems in the pool were encrypted under a single encryption root. The encryption key was saved in a small zvol called `keystore`. This volume was encrypted with the password I entered during installation using LUKS, and formatted with ext4. Scripts in the initramfs ask for the keystore password and mount it in `/run/keystore/rpool/` before unlocking and mounting the root filesystem.
 
-I also had the EFI System Partition (ESP) and a second zpool for GRUB, mounted in `/boot`, that I deleted in favor of a single ext4 partition (as stated above I've kept it as an unsecured backup option).
+I also have the EFI System Partition (ESP) and I had a second zpool for GRUB, mounted in `/boot`, that I deleted in favor of a single ext4 partition (as stated above I've kept it as an unsecured backup option).
 
 Ubuntu 23.10 does not use systemd in the initramfs.
 
