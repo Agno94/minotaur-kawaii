@@ -19,3 +19,4 @@ copy_exec /usr/bin/tpm2-initramfs-tool
 
 copy_exec /usr/lib/cryptsetup/askpass /usr/bin
 copy_exec /etc/initramfs-tools/tpm2-cryptsetup
+
