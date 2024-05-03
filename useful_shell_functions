@@ -1,0 +1,40 @@
+function _generate_ssl_key_and_cert_for_sb() {
+ commonname=${1:-"CommonName"}
+ diskname=${2:-"mycert"}`date "+%Y%m%d"`
+ echo Using common name $commonname. Saving with name $2.
+ openssl req -new -x509 -newkey rsa:2048 -subj "/CN=$commonname/" -keyout $diskname.key -out $diskname.crt -days 2200 -nodes -sha256
+ openssl x509 -in $diskname.crt -out $diskname.der -outform DER
+ openssl x509 -in $diskname.der -noout -text
+}
+
+function _luks_remove_tpm2_secret_keyslot() {
+ device=${1:-"/dev/zd0"}
+ secret=${2:-"/root/luks_tpm2_secret"}
+ cryptsetup luksRemoveKey $device --key-file $secret
+}
+
+function _tpm_secret_reseal() {
+ echo 
+ secret=${1:-"/root/luks_tpm2_secret"}
+ pcrs=${2:-"0,1,2,3,5,7"}
+ tpm2-initramfs-tool seal --data $(cat $secret) --pcrs $pcrs --banks SHA256
+}
+
+function _tpm_secret_unseal() {
+ tpm2-initramfs-tool unseal --pcrs ${1:-"0,1,2,3,5,7"} --banks SHA256
+ if [ $? -eq 0 ]
+ then
+  echo " ... OK"
+ else
+  echo " ... FAILED"
+ fi
+}
+
+function _luks_regenerate_tpm2_secret() {
+ _luks_remove_tpm2_secret_keyslot $1 $2
+ ./setup_luks_keyslot_and_tpm.sh $1 $2
+ _tpm_secret_reseal $2
+}
+
+# To load run `source $THISFILEPATH`
+
