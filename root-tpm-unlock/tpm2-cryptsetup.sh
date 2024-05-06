@@ -1,15 +1,22 @@
 #!/bin/sh
 
+log() { echo $1 >&2; echo $1 > /dev/kmsg; }
+
+log "crypt-tpm-unlock: Asked for encryption password for $CRYPTTAB_SOURCE ($CRYPTTAB_NAME)"
+
 if [ "$CRYPTTAB_TRIED" -lt "1" ]
 then
-  echo "Cryptsetup script" 1>&2
-  echo "Trying unlock $CRYPTTAB_SOURCE ($CRYPTTAB_NAME) with TPM" 1>&2
-  echo "Trying unlock $CRYPTTAB_SOURCE ($CRYPTTAB_NAME) with TPM" > /dev/kmsg
-  tpm2-initramfs-tool unseal --pcrs 0,1,2,3,5,7 --banks SHA256
-  echo Returning secret 1>&2
-  echo Returning secret > /dev/kmsg
+ secret=`tpm2-initramfs-tool unseal --pcrs 0,1,2,3,7`
+ if [ $? -eq 0 ]
+ then
+  log "crypt-tpm-unlock: Returning TPM2 secret"
+  echo -n $secret
   exit 0
+ fi
+ log "crypt-tpm-unlock: TPM2 secret not available"
 fi
+
+log "crypt-tpm-unlock: Asking for password"
 
 /usr/bin/askpass "Passphrase for $CRYPTTAB_SOURCE ($CRYPTTAB_NAME): "
 

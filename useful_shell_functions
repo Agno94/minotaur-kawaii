@@ -16,12 +16,12 @@ function _luks_remove_tpm2_secret_keyslot() {
 function _tpm_secret_reseal() {
  echo 
  secret=${1:-"/root/luks_tpm2_secret"}
- pcrs=${2:-"0,1,2,3,5,7"}
+ pcrs=${2:-"0,1,2,3,7"}
  tpm2-initramfs-tool seal --data $(cat $secret) --pcrs $pcrs --banks SHA256
 }
 
 function _tpm_secret_unseal() {
- tpm2-initramfs-tool unseal --pcrs ${1:-"0,1,2,3,5,7"} --banks SHA256
+ tpm2-initramfs-tool unseal --pcrs ${1:-"0,1,2,3,7"} --banks SHA256
  if [ $? -eq 0 ]
  then
   echo " ... OK"
